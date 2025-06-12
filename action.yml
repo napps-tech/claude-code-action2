@@ -41,10 +41,6 @@ inputs:
     default: ""
   mcp_config:
     description: "Additional MCP configuration (JSON string) that merges with the built-in GitHub MCP servers"
-  claude_env:
-    description: "Custom environment variables to pass to Claude Code execution (YAML format)"
-    required: false
-    default: ""
 
   # Auth configuration
   anthropic_api_key:
@@ -136,7 +132,6 @@ runs:
         claude_access_token: ${{ inputs.claude_access_token }}
         claude_refresh_token: ${{ inputs.claude_refresh_token }}
         claude_expires_at: ${{ inputs.claude_expires_at }}
-        claude_env: ${{ inputs.claude_env }}
       env:
         # Model configuration
         ANTHROPIC_MODEL: ${{ inputs.model || inputs.anthropic_model }}
