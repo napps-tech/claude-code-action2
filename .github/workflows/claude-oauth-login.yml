@@ -1,0 +1,68 @@
+name: Claude OAuth Login (Simple)
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorization_code:
+        description: 'Authorization code from Claude OAuth (leave empty to generate URL)'
+        required: false
+        type: string
+
+jobs:
+  oauth-login:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          
+      - name: Generate OAuth URL or Process Code
+        run: |
+          if [ -z "${{ inputs.authorization_code }}" ]; then
+            # No code provided, generate URL
+            chmod +x .github/scripts/claude_oauth_login.rb
+            oauth_url=$(.github/scripts/claude_oauth_login.rb)
+            
+            echo "## 🔐 Claude OAuth Login Instructions" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Step 1: Complete OAuth Authorization" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "1. Click this link to authenticate: [$oauth_url]($oauth_url)" >> $GITHUB_STEP_SUMMARY
+            echo "2. Log in to Anthropic and authorize the application" >> $GITHUB_STEP_SUMMARY
+            echo "3. Copy the authorization code from the redirect page" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Step 2: Run Workflow Again" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "1. Go to the [Actions tab](${{ github.server_url }}/${{ github.repository }}/actions/workflows/claude-oauth-login-simple.yml)" >> $GITHUB_STEP_SUMMARY
+            echo "2. Click 'Run workflow'" >> $GITHUB_STEP_SUMMARY
+            echo "3. Paste the authorization code in the input field" >> $GITHUB_STEP_SUMMARY
+            echo "4. Click 'Run workflow' to process the code" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Important:** The authorization code expires in 10 minutes!" >> $GITHUB_STEP_SUMMARY
+            
+            # Also output to logs
+            echo "=================================================="
+            echo "No authorization code provided."
+            echo "Please visit the following URL to authenticate:"
+            echo "$oauth_url"
+            echo ""
+            echo "After authorization, run this workflow again with the code."
+            echo "=================================================="
+          else
+            # Code provided, process it
+            echo "## ✅ Authorization Code Received" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Processing authorization code..." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Code:** \`${{ inputs.authorization_code }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
+            
+            # Here you would typically exchange the code for tokens
+            echo "Authorization code: ${{ inputs.authorization_code }}"
+            echo "Next step would be to exchange this code for access tokens"
+          fi
